@@ -1,0 +1,29 @@
+---
+- hosts: localhost
+  tasks:
+    - name: create work directories appfiles and wallet
+      command: bash -lc "mkdir appfiles && mkdir appfiles/wallet && cp -av wallet-orig/* appfiles/wallet"
+    - name: download the application
+      action: shell wget https://objectstorage.us-ashburn-1.oraclecloud.com/p/Bri08FSdJ9Y303UwImFtkuaQgUQnS9btIAYVn6xnTiFjsTeIPrtbXzwVDIx922Lx/n/idqfa2z2mift/b/bootcamp-oci/o/oci-projeto-final-cadastro-funcionarios-app.zip
+    - name: download dockerfile
+      action: shell wget https://objectstorage.us-ashburn-1.oraclecloud.com/p/B46K8rQiJy4TJmvn64E9yGeBNYsXXzFd8OXEHJSSNppHdIxq7ZO0bO9_nl2ONKLQ/n/idqfa2z2mift/b/bootcamp-oci/o/oci-projeto-final-cadastro-funcionarios-app-Dockerfile.zip
+    - name: unzip application file
+      unarchive:
+        src: oci-projeto-final-cadastro-funcionarios-app.zip
+        dest: appfiles
+    - name: unzip dockerfile file
+      unarchive:
+        src: oci-projeto-final-cadastro-funcionarios-app-Dockerfile.zip
+        dest: appfiles
+    - name: docker build
+      command: bash -lc "cd <local current diretory>/appfiles && docker build -t oci-projeto-final-cadastro-funcionarios-app-innovator:latest ."
+    - name: Log into docker hub + force re-authorization
+      docker_login:
+        registry: https://index.docker.io 
+        username: <docker-userid>
+        password: <docker-password>
+        reauthorize: yes
+    - name: docker tag
+      action: shell docker tag oci-projeto-final-cadastro-funcionarios-app-innovator <docker-id>/oci-projeto-final-cadastro-funcionarios-app-innovator
+    - name: docker push
+      action: shell docker push <docker-userid>/oci-projeto-final-cadastro-funcionarios-app-innovator:latest

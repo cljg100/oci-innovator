@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  tasks:
+    - name: unzip wallet - Autonomous Database
+      unarchive:
+        src: autonomous_database_wallet.zip
+        dest: appfiles/wallet

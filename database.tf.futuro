@@ -1,0 +1,34 @@
+data "oci_database_autonomous_databases" "tfdbrh" {
+  compartment_id = var.oci_compartment_id
+  db_workload  = "OLTP"
+}
+#  cpu_core_count           = "1"
+#  data_storage_size_in_tbs = "1"
+
+resource "oci_database_autonomous_database" "tfdbrh" {
+  compartment_id           = var.oci_compartment_id
+  db_name                  = "tfdbrh"          
+  admin_password           = "<admin-password>"   
+  cpu_core_count           = "1"
+  data_storage_size_in_tbs = "1"
+  display_name             = "tfdbrh"              
+  is_free_tier             = "true"
+}
+# Create database  wallet
+resource "oci_database_autonomous_database_wallet" "tfdbrh_wallet" {
+    #Mandatory
+    autonomous_database_id   = oci_database_autonomous_database.tfdbrh.id
+    password                 = var.autonomous_database_wallet_password
+    #Optional
+    base64_encode_content    = "true"
+    generate_type            = var.autonomous_database_wallet_generate_type
+}
+#Create database wallet zip file at local directory
+resource "local_file" "autonomous_database_wallet_file" {
+    content_base64 = oci_database_autonomous_database_wallet.tfdbrh_wallet.content
+    filename       = "autonomous_database_wallet.zip"
+#Copy database wallet to appfiles/wallet 
+    provisioner "local-exec" {
+     command = "ansible-playbook config-database.yaml"
+    }
+}
